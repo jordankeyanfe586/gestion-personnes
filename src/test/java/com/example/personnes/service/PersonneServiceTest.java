@@ -100,4 +100,55 @@ public class PersonneServiceTest {
 
         assertEquals("Aucune personne trouvée avec l'identifiant" + id, execption.getMessage());
     }
+
+    @Test
+    void changerStatutActifAvecIdExistantSauvegardeEtRetourneReponse() {
+        Long id = 1L;
+        Personne personne = new Personne.Builder()
+            .id(id)
+            .nom("jordan")
+            .prenom("keyanfe")
+            .email("jordan@gmail.com")
+            .age(26)
+            .type(TypePersonne.ETUDIANT)
+            .actif(false)
+            .build();
+
+        PersonneResponse response = new PersonneResponse(
+            id,
+            "jordan",
+            "keyanfe",
+            "jordan@gmail.com",
+            26,
+            TypePersonne.ETUDIANT,
+            true
+        );
+
+        when(repository.findById(id))
+            .thenReturn(Optional.of(personne));
+
+        when(repository.save(any(Personne.class)))
+            .thenAnswer(invocation -> invocation.getArgument(0));
+
+        assertEquals(response, service.changerStatutActif(id, true));
+
+        verify(repository).save(any(Personne.class));
+    }
+
+    @Test
+    void changerStatutActifAvecIdInexistantDeclencheException() {
+        Long id = 120L;
+
+        when(repository.findById(id))
+            .thenReturn(Optional.empty());
+
+        PersonneIntrouvableException execption = assertThrows(
+            PersonneIntrouvableException.class,
+            () -> service.changerStatutActif(id, true)
+        );
+
+        assertEquals("Aucune personne trouvée avec l'identifiant" + id, execption.getMessage());
+
+        verify(repository, never()).save(any(Personne.class));
+    }
 }

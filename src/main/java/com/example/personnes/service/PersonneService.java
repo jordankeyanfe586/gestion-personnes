@@ -87,6 +87,25 @@ public class PersonneService {
             );
     }
 
+    public PersonneResponse changerStatutActif(Long id, boolean actif) {
+        Personne personneTrouver = repository.findById(id)
+            .orElseThrow(() -> new PersonneIntrouvableException(
+                "Aucune personne trouvée avec l'identifiant" + id));
+
+        personneTrouver.setActif(actif);
+        Personne personneSave = repository.save(personneTrouver);
+
+        return new PersonneResponse(
+            personneSave.getId(),
+            personneSave.getNom(),
+            personneSave.getPrenom(),
+            personneSave.getEmail(),
+            personneSave.getage(),
+            personneSave.getType(),
+            personneSave.getActif()
+        );
+    }
+
     public void supprimer(Long id) {
         PersonneResponse personneTrouver = trouverParId(id);
         repository.deleteById(personneTrouver.id());

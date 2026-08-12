@@ -1,5 +1,6 @@
 package com.example.personnes.controller;
 
+import com.example.personnes.dto.ActifRequest;
 import com.example.personnes.dto.PersonneRequest;
 import com.example.personnes.dto.PersonneResponse;
 import com.example.personnes.service.PersonneService;
@@ -41,6 +42,11 @@ public class PersonneController {
     @DeleteMapping("/{id}")
     public void supprimer(@PathVariable Long id) {
         service.supprimer(id);
+    }
+
+    @PatchMapping("/{id}/actif")
+    public PersonneResponse changerStatutActif(@PathVariable Long id, @Valid @RequestBody ActifRequest actifRequest) {
+        return service.changerStatutActif(id, actifRequest.actif());
     }
 
 }

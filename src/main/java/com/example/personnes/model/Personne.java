@@ -68,6 +68,10 @@ public class Personne {
         return actif;
     }
 
+    public void setActif(boolean actif) {
+        this.actif = actif;
+    }
+
     public static class Builder {
         private  Long id;
         private  String nom;
