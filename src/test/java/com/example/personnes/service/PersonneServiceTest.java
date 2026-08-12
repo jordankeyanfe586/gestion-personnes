@@ -1,0 +1,103 @@
+package com.example.personnes.service;
+import com.example.personnes.model.Personne;
+import com.example.personnes.model.TypePersonne;
+import com.example.personnes.repository.PersonneRepository;
+import com.example.personnes.dto.PersonneRequest;
+import com.example.personnes.dto.PersonneResponse;
+import com.example.personnes.exception.EmaildejaUtiliserException;
+import com.example.personnes.exception.PersonneIntrouvableException;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.mock;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.util.Optional;
+
+public class PersonneServiceTest {
+      private PersonneRepository repository;
+      private PersonneService service;
+
+    @BeforeEach
+    void preparerTest() {
+        repository = mock(PersonneRepository.class);
+        service = new PersonneService(repository);
+    }
+
+    @Test
+     void creerEmailDejaUtiliserDeclencheException() {
+        PersonneRequest request = new PersonneRequest(
+            "jordan",
+            "keyanfe",
+            "jordan@gmail.com",
+            26,
+            TypePersonne.ETUDIANT
+        );
+
+        when(repository.existsByEmail(request.email()))
+            .thenReturn(true);
+
+        EmaildejaUtiliserException exception = assertThrows(
+            EmaildejaUtiliserException.class,
+            () -> service.creer(request)
+        );
+
+        assertEquals("Email déja utiliser", exception.getMessage());
+
+        verify(repository, never()).save(any(Personne.class));
+    }
+
+    @Test
+    void creerAvecNouvelEmailSauvegardePersonne() {
+        PersonneRequest request = new PersonneRequest(
+            "jordan",
+            "keyanfe",
+            "jordan@gmail.com",
+            26,
+            TypePersonne.ETUDIANT
+        );
+
+        PersonneResponse response = new PersonneResponse(
+            1L,
+            "jordan",
+            "keyanfe",
+            "jordan@gmail.com",
+            26,
+            TypePersonne.ETUDIANT,
+            true
+        );
+
+        when(repository.existsByEmail(request.email()))
+            .thenReturn(false);
+
+        when(repository.save(any(Personne.class)))
+            .thenAnswer(invocation -> {
+                Personne personne = invocation.getArgument(0);
+                personne.setId(1L);
+                return personne;
+            });
+        assertEquals(response, service.creer(request));
+        verify(repository).save(any(Personne.class));
+    }
+
+    @Test
+    void trouverAvecIdInexistantDeclencheException() {
+        Long id = 120L;
+
+        when(repository.findById(id))
+            .thenReturn(Optional.empty());
+
+        PersonneIntrouvableException execption = assertThrows(
+            PersonneIntrouvableException.class,
+            () -> service.trouverParId(id)
+        );
+
+        assertEquals("Aucune personne trouvée avec l'identifiant" + id, execption.getMessage());
+    }
+}
