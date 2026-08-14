@@ -10,12 +10,16 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.http.MediaType;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
@@ -124,6 +128,41 @@ public class PersonneControllerTest {
                 .value(message));
 
         verify(service).changerStatutActif(id, true);
+    }
+
+    @Test
+    void getRechercheAvecFiltresRetourneUnePage() throws Exception {
+        PersonneResponse response = new PersonneResponse(
+            1L, "Jordan", "Keyanfe", "jordan@gmail.com", 26,
+            TypePersonne.EMPLOYE, true
+        );
+        when(service.rechercher(eq("ord"), eq(TypePersonne.EMPLOYE), eq(true), any(Pageable.class)))
+            .thenReturn(new PageImpl<>(java.util.List.of(response)));
+
+        mockMvc.perform(get("/api/personnes")
+            .param("nom", "ord")
+            .param("type", "EMPLOYE")
+            .param("actif", "true")
+            .param("page", "0")
+            .param("size", "5"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.content[0].nom").value("Jordan"))
+            .andExpect(jsonPath("$.content[0].type").value("EMPLOYE"))
+            .andExpect(jsonPath("$.content[0].actif").value(true));
+
+        verify(service).rechercher(eq("ord"), eq(TypePersonne.EMPLOYE), eq(true), any(Pageable.class));
+    }
+
+    @Test
+    void getRechercheSansResultatRetourneUnePageVide() throws Exception {
+        when(service.rechercher(eq(null), eq(null), eq(null), any(Pageable.class)))
+            .thenReturn(new PageImpl<>(java.util.List.of()));
+
+        mockMvc.perform(get("/api/personnes"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.content").isEmpty());
+
+        verify(service).rechercher(eq(null), eq(null), eq(null), any(Pageable.class));
     }
 
 }

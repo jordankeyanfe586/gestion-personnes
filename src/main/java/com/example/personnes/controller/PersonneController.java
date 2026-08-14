@@ -3,6 +3,7 @@ package com.example.personnes.controller;
 import com.example.personnes.dto.ActifRequest;
 import com.example.personnes.dto.PersonneRequest;
 import com.example.personnes.dto.PersonneResponse;
+import com.example.personnes.model.TypePersonne;
 import com.example.personnes.service.PersonneService;
 
 import org.springframework.web.bind.annotation.*;
@@ -20,8 +21,13 @@ public class PersonneController {
     }
 
     @GetMapping
-    public Page<PersonneResponse> trouverToutes(Pageable pageable) {
-        return service.trouverToutes(pageable);
+    public Page<PersonneResponse> trouverToutes(
+        @RequestParam(required = false) String nom,
+        @RequestParam(required = false) TypePersonne type,
+        @RequestParam(required = false) Boolean actif,
+        Pageable pageable
+    ) {
+        return service.rechercher(nom, type, actif, pageable);
     }
 
     @GetMapping("/{id}")

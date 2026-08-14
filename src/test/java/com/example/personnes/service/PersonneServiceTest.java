@@ -9,16 +9,23 @@ import com.example.personnes.exception.PersonneIntrouvableException;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.Optional;
+import java.util.List;
 
 public class PersonneServiceTest {
       private PersonneRepository repository;
@@ -150,5 +157,31 @@ public class PersonneServiceTest {
         assertEquals("Aucune personne trouvée avec l'identifiant" + id, execption.getMessage());
 
         verify(repository, never()).save(any(Personne.class));
+    }
+
+    @Test
+    void rechercherRetourneUnePageDePersonnesFiltrees() {
+        Pageable pageable = PageRequest.of(1, 2);
+        Personne personne = new Personne.Builder()
+            .id(1L)
+            .nom("Jordan")
+            .prenom("Keyanfe")
+            .email("jordan@gmail.com")
+            .age(26)
+            .type(TypePersonne.EMPLOYE)
+            .actif(true)
+            .build();
+
+        when(repository.findAll(any(Specification.class), eq(pageable)))
+            .thenReturn(new PageImpl<>(List.of(personne), pageable, 3));
+
+        Page<PersonneResponse> resultat = service.rechercher(
+            "ordan", TypePersonne.EMPLOYE, true, pageable
+        );
+
+        assertEquals(3, resultat.getTotalElements());
+        assertEquals(1, resultat.getNumber());
+        assertEquals("Jordan", resultat.getContent().getFirst().nom());
+        verify(repository).findAll(any(Specification.class), eq(pageable));
     }
 }
