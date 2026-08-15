@@ -25,9 +25,11 @@ public class PersonneController {
         @RequestParam(required = false) String nom,
         @RequestParam(required = false) TypePersonne type,
         @RequestParam(required = false) Boolean actif,
+        @RequestParam(required = false) Integer ageMin,
+        @RequestParam(required = false) Integer ageMax,
         Pageable pageable
     ) {
-        return service.rechercher(nom, type, actif, pageable);
+        return service.rechercher(nom, type, actif, ageMin, ageMax, pageable);
     }
 
     @GetMapping("/{id}")

@@ -176,12 +176,45 @@ public class PersonneServiceTest {
             .thenReturn(new PageImpl<>(List.of(personne), pageable, 3));
 
         Page<PersonneResponse> resultat = service.rechercher(
-            "ordan", TypePersonne.EMPLOYE, true, pageable
+            "ordan", TypePersonne.EMPLOYE, true, 25, 30, pageable
         );
 
         assertEquals(3, resultat.getTotalElements());
         assertEquals(1, resultat.getNumber());
         assertEquals("Jordan", resultat.getContent().getFirst().nom());
         verify(repository).findAll(any(Specification.class), eq(pageable));
+    }
+
+    @Test
+    void rechercherAvecAgeMinSuperieurAgeMaxDeclencheException() {
+        IllegalArgumentException exception = assertThrows(
+            IllegalArgumentException.class,
+            () -> service.rechercher(null, null, null, 30, 20, PageRequest.of(0, 10))
+        );
+
+        assertEquals("L'âge minimum doit être inférieur ou égal à l'âge maximum.", exception.getMessage());
+        verify(repository, never()).findAll(any(Specification.class), any(Pageable.class));
+    }
+
+    @Test
+    void rechercherAvecAgeMinNonPositifDeclencheException() {
+        IllegalArgumentException exception = assertThrows(
+            IllegalArgumentException.class,
+            () -> service.rechercher(null, null, null, 0, null, PageRequest.of(0, 10))
+        );
+
+        assertEquals("L'âge minimum doit être strictement positif.", exception.getMessage());
+        verify(repository, never()).findAll(any(Specification.class), any(Pageable.class));
+    }
+
+    @Test
+    void rechercherAvecAgeMaxNonPositifDeclencheException() {
+        IllegalArgumentException exception = assertThrows(
+            IllegalArgumentException.class,
+            () -> service.rechercher(null, null, null, null, -1, PageRequest.of(0, 10))
+        );
+
+        assertEquals("L'âge maximum doit être strictement positif.", exception.getMessage());
+        verify(repository, never()).findAll(any(Specification.class), any(Pageable.class));
     }
 }

@@ -136,13 +136,17 @@ public class PersonneControllerTest {
             1L, "Jordan", "Keyanfe", "jordan@gmail.com", 26,
             TypePersonne.EMPLOYE, true
         );
-        when(service.rechercher(eq("ord"), eq(TypePersonne.EMPLOYE), eq(true), any(Pageable.class)))
+        when(service.rechercher(
+            eq("ord"), eq(TypePersonne.EMPLOYE), eq(true), eq(25), eq(30), any(Pageable.class)
+        ))
             .thenReturn(new PageImpl<>(java.util.List.of(response)));
 
         mockMvc.perform(get("/api/personnes")
             .param("nom", "ord")
             .param("type", "EMPLOYE")
             .param("actif", "true")
+            .param("ageMin", "25")
+            .param("ageMax", "30")
             .param("page", "0")
             .param("size", "5"))
             .andExpect(status().isOk())
@@ -150,19 +154,50 @@ public class PersonneControllerTest {
             .andExpect(jsonPath("$.content[0].type").value("EMPLOYE"))
             .andExpect(jsonPath("$.content[0].actif").value(true));
 
-        verify(service).rechercher(eq("ord"), eq(TypePersonne.EMPLOYE), eq(true), any(Pageable.class));
+        verify(service).rechercher(
+            eq("ord"), eq(TypePersonne.EMPLOYE), eq(true), eq(25), eq(30), any(Pageable.class)
+        );
     }
 
     @Test
     void getRechercheSansResultatRetourneUnePageVide() throws Exception {
-        when(service.rechercher(eq(null), eq(null), eq(null), any(Pageable.class)))
+        when(service.rechercher(eq(null), eq(null), eq(null), eq(null), eq(null), any(Pageable.class)))
             .thenReturn(new PageImpl<>(java.util.List.of()));
 
         mockMvc.perform(get("/api/personnes"))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.content").isEmpty());
 
-        verify(service).rechercher(eq(null), eq(null), eq(null), any(Pageable.class));
+        verify(service).rechercher(eq(null), eq(null), eq(null), eq(null), eq(null), any(Pageable.class));
+    }
+
+    @Test
+    void getRechercheAvecIntervalleAgeInvalideRetourne400Clair() throws Exception {
+        String message = "L'âge minimum doit être inférieur ou égal à l'âge maximum.";
+        when(service.rechercher(eq(null), eq(null), eq(null), eq(30), eq(20), any(Pageable.class)))
+            .thenThrow(new IllegalArgumentException(message));
+
+        mockMvc.perform(get("/api/personnes")
+            .param("ageMin", "30")
+            .param("ageMax", "20"))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.message").value(message));
+
+        verify(service).rechercher(eq(null), eq(null), eq(null), eq(30), eq(20), any(Pageable.class));
+    }
+
+    @Test
+    void getRechercheAvecAgeMinNonPositifRetourne400Clair() throws Exception {
+        String message = "L'âge minimum doit être strictement positif.";
+        when(service.rechercher(eq(null), eq(null), eq(null), eq(0), eq(null), any(Pageable.class)))
+            .thenThrow(new IllegalArgumentException(message));
+
+        mockMvc.perform(get("/api/personnes")
+            .param("ageMin", "0"))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.message").value(message));
+
+        verify(service).rechercher(eq(null), eq(null), eq(null), eq(0), eq(null), any(Pageable.class));
     }
 
 }

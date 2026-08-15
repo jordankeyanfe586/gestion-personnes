@@ -66,7 +66,26 @@ public class PersonneService {
         return pagePersonnes.map(this::versResponse);
     }
 
-    public Page<PersonneResponse> rechercher(String nom, TypePersonne type, Boolean actif, Pageable pageable) {
+    public Page<PersonneResponse> rechercher(
+        String nom,
+        TypePersonne type,
+        Boolean actif,
+        Integer ageMin,
+        Integer ageMax,
+        Pageable pageable
+    ) {
+        if (ageMin != null && ageMin <= 0) {
+            throw new IllegalArgumentException("L'âge minimum doit être strictement positif.");
+        }
+        if (ageMax != null && ageMax <= 0) {
+            throw new IllegalArgumentException("L'âge maximum doit être strictement positif.");
+        }
+        if (ageMin != null && ageMax != null && ageMin > ageMax) {
+            throw new IllegalArgumentException(
+                "L'âge minimum doit être inférieur ou égal à l'âge maximum."
+            );
+        }
+
         Specification<Personne> specification = (root, query, criteriaBuilder) -> {
             var predicates = new ArrayList<Predicate>();
 
@@ -81,6 +100,12 @@ public class PersonneService {
             }
             if (actif != null) {
                 predicates.add(criteriaBuilder.equal(root.get("actif"), actif));
+            }
+            if (ageMin != null) {
+                predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get("age"), ageMin));
+            }
+            if (ageMax != null) {
+                predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("age"), ageMax));
             }
 
             return criteriaBuilder.and(predicates.toArray(Predicate[]::new));

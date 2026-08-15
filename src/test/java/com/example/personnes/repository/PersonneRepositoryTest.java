@@ -59,13 +59,13 @@ public class PersonneRepositoryTest {
 
     @Test
     void rechercheCombineLesCriteresEtRespecteLaPagination() {
-        sauvegarder("Jordan", TypePersonne.EMPLOYE, true);
-        sauvegarder("JORDAN", TypePersonne.EMPLOYE, true);
-        sauvegarder("Jordan", TypePersonne.ETUDIANT, true);
-        sauvegarder("Jordan", TypePersonne.EMPLOYE, false);
+        sauvegarder("Jordan", 25, TypePersonne.EMPLOYE, true);
+        sauvegarder("JORDAN", 30, TypePersonne.EMPLOYE, true);
+        sauvegarder("Jordan", 35, TypePersonne.ETUDIANT, true);
+        sauvegarder("Jordan", 40, TypePersonne.EMPLOYE, false);
 
         Page<PersonneResponse> resultat = service.rechercher(
-            "ordan", TypePersonne.EMPLOYE, true, PageRequest.of(0, 1)
+            "ordan", TypePersonne.EMPLOYE, true, null, null, PageRequest.of(0, 1)
         );
 
         assertEquals(2, resultat.getTotalElements());
@@ -76,24 +76,47 @@ public class PersonneRepositoryTest {
 
     @Test
     void rechercheSansCritereRetourneToutesLesPersonnesEtUneRechercheSansCorrespondanceEstVide() {
-        sauvegarder("Jordan", TypePersonne.ETUDIANT, true);
-        sauvegarder("Alice", TypePersonne.AUTRE, false);
+        sauvegarder("Jordan", 25, TypePersonne.ETUDIANT, true);
+        sauvegarder("Alice", 40, TypePersonne.AUTRE, false);
 
-        Page<PersonneResponse> toutes = service.rechercher(null, null, null, PageRequest.of(0, 10));
-        Page<PersonneResponse> nomVide = service.rechercher(" ", null, null, PageRequest.of(0, 10));
-        Page<PersonneResponse> aucune = service.rechercher("inconnu", null, null, PageRequest.of(0, 10));
+        Page<PersonneResponse> toutes = service.rechercher(null, null, null, null, null, PageRequest.of(0, 10));
+        Page<PersonneResponse> nomVide = service.rechercher(" ", null, null, null, null, PageRequest.of(0, 10));
+        Page<PersonneResponse> aucune = service.rechercher("inconnu", null, null, null, null, PageRequest.of(0, 10));
 
         assertEquals(2, toutes.getTotalElements());
         assertEquals(2, nomVide.getTotalElements());
         assertTrue(aucune.isEmpty());
     }
 
-    private void sauvegarder(String nom, TypePersonne type, boolean actif) {
+    @Test
+    void rechercheParAgeRespecteLesBornesInclusives() {
+        sauvegarder("Alice", 20, TypePersonne.ETUDIANT, true);
+        sauvegarder("Bruno", 25, TypePersonne.ETUDIANT, true);
+        sauvegarder("Chloe", 30, TypePersonne.ETUDIANT, true);
+        sauvegarder("David", 35, TypePersonne.ETUDIANT, true);
+
+        Page<PersonneResponse> ageMin = service.rechercher(null, null, null, 30, null, PageRequest.of(0, 10));
+        Page<PersonneResponse> ageMax = service.rechercher(null, null, null, null, 25, PageRequest.of(0, 10));
+        Page<PersonneResponse> intervalle = service.rechercher(null, null, null, 25, 30, PageRequest.of(0, 10));
+
+        assertEquals(2, ageMin.getTotalElements());
+        assertEquals(2, ageMax.getTotalElements());
+        assertEquals(2, intervalle.getTotalElements());
+        assertTrue(ageMin.getContent().stream().allMatch(personne -> personne.age() >= 30));
+        assertTrue(ageMax.getContent().stream().allMatch(personne -> personne.age() <= 25));
+        assertTrue(intervalle.getContent().stream().allMatch(personne ->
+            personne.age() >= 25 && personne.age() <= 30
+        ));
+        assertTrue(intervalle.getContent().stream().anyMatch(personne -> personne.age() == 25));
+        assertTrue(intervalle.getContent().stream().anyMatch(personne -> personne.age() == 30));
+    }
+
+    private void sauvegarder(String nom, int age, TypePersonne type, boolean actif) {
         repository.saveAndFlush(new Personne.Builder()
             .nom(nom)
             .prenom("Prenom")
             .email(nom + type + actif + "@example.com")
-            .age(25)
+            .age(age)
             .type(type)
             .actif(actif)
             .build());
