@@ -82,7 +82,7 @@ public class PersonneControllerTest {
             id,
             "jordan",
             "keyanfe",
-            "jordan@gmail.com",
+            "personne@example.com",
             26,
             TypePersonne.ETUDIANT,
             true
@@ -133,7 +133,7 @@ public class PersonneControllerTest {
     @Test
     void getRechercheAvecFiltresRetourneUnePage() throws Exception {
         PersonneResponse response = new PersonneResponse(
-            1L, "Jordan", "Keyanfe", "jordan@gmail.com", 26,
+            1L, "Jordan", "Keyanfe", "personne@example.com", 26,
             TypePersonne.EMPLOYE, true
         );
         when(service.rechercher(

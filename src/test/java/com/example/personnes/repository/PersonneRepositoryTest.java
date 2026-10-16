@@ -36,7 +36,7 @@ public class PersonneRepositoryTest {
         PersonneRequest request = new PersonneRequest(
             "jordan",
             "keyanfe",
-            "jordan@gmail.com",
+            "personne@example.com",
             25,
             TypePersonne.ETUDIANT
         );
@@ -46,9 +46,9 @@ public class PersonneRepositoryTest {
         Personne personneSauvegardee = repository.saveAndFlush(personne);
 
         assertNotNull(personneSauvegardee.getId());
-        assertTrue(repository.existsByEmail("jordan@gmail.com"));
+        assertTrue(repository.existsByEmail("personne@example.com"));
 
-        Optional<Personne> resultat = repository.findByEmail("jordan@gmail.com");
+        Optional<Personne> resultat = repository.findByEmail("personne@example.com");
 
         assertTrue(resultat.isPresent());
         assertEquals(

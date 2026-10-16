@@ -49,14 +49,14 @@ class GestionPersonnesApplicationTests {
 		PersonneRequest request = new PersonneRequest(
 			"jordan",
 			"keyanfe",
-			"jordan@gmail.com",
+			"personne@example.com",
 			25,
 			TypePersonne.ETUDIANT);
 
 		PersonneResponse response = service.creer(request);
 
-		assertEquals("jordan@gmail.com", response.email());
-		assertTrue(repository.existsByEmail("jordan@gmail.com"));
+		assertEquals("personne@example.com", response.email());
+		assertTrue(repository.existsByEmail("personne@example.com"));
 	}
 
 	@Test
@@ -67,14 +67,14 @@ class GestionPersonnesApplicationTests {
 					{
 						"nom": "jordan",
 						"prenom": "keyanfe",
-						"email": "jordan@gmail.com",
+						"email": "personne@example.com",
 						"age": 26,
 						"type": "ETUDIANT"
 					}
 					"""))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.email")
-				.value("jordan@gmail.com"))
+				.value("personne@example.com"))
 			.andExpect(jsonPath("$.id")
 				.isNumber());
 

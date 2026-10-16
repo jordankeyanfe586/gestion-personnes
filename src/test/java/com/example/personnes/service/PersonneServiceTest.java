@@ -42,7 +42,7 @@ public class PersonneServiceTest {
         PersonneRequest request = new PersonneRequest(
             "jordan",
             "keyanfe",
-            "jordan@gmail.com",
+            "personne@example.com",
             26,
             TypePersonne.ETUDIANT
         );
@@ -65,7 +65,7 @@ public class PersonneServiceTest {
         PersonneRequest request = new PersonneRequest(
             "jordan",
             "keyanfe",
-            "jordan@gmail.com",
+            "personne@example.com",
             26,
             TypePersonne.ETUDIANT
         );
@@ -74,7 +74,7 @@ public class PersonneServiceTest {
             1L,
             "jordan",
             "keyanfe",
-            "jordan@gmail.com",
+            "personne@example.com",
             26,
             TypePersonne.ETUDIANT,
             true
@@ -146,7 +146,7 @@ public class PersonneServiceTest {
             .id(id)
             .nom("jordan")
             .prenom("keyanfe")
-            .email("jordan@gmail.com")
+            .email("personne@example.com")
             .age(26)
             .type(TypePersonne.ETUDIANT)
             .actif(false)
@@ -156,7 +156,7 @@ public class PersonneServiceTest {
             id,
             "jordan",
             "keyanfe",
-            "jordan@gmail.com",
+            "personne@example.com",
             26,
             TypePersonne.ETUDIANT,
             true
@@ -197,7 +197,7 @@ public class PersonneServiceTest {
             .id(1L)
             .nom("Jordan")
             .prenom("Keyanfe")
-            .email("jordan@gmail.com")
+            .email("personne@example.com")
             .age(26)
             .type(TypePersonne.EMPLOYE)
             .actif(true)
