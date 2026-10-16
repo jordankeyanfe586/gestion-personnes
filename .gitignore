@@ -40,3 +40,11 @@ build/
 
 ### Notes IA locales
 gemini-code-1785090769765.md
+
+# Local AI-agent settings and working files
+/.claude/
+
+# Local environment files (keep fictional examples trackable)
+.env
+.env.*
+!.env.example
