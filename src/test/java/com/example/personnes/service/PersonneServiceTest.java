@@ -94,6 +94,37 @@ public class PersonneServiceTest {
     }
 
     @Test
+    void modifierUnePersonneDesactiveeConserveSonStatut() {
+        Personne personneExistante = new Personne.Builder()
+            .id(1L)
+            .nom("Ancien nom")
+            .prenom("Demo")
+            .email("personne@example.com")
+            .age(25)
+            .type(TypePersonne.ETUDIANT)
+            .actif(false)
+            .build();
+        PersonneRequest request = new PersonneRequest(
+            "Nouveau nom", "Demo", "personne@example.com", 26, TypePersonne.EMPLOYE
+        );
+
+        when(repository.findByEmail(request.email()))
+            .thenReturn(Optional.of(personneExistante));
+        when(repository.save(any(Personne.class)))
+            .thenAnswer(invocation -> invocation.getArgument(0));
+
+        PersonneResponse resultat = service.modifier(request);
+
+        assertEquals(new PersonneResponse(
+            1L, "Nouveau nom", "Demo", "personne@example.com", 26, TypePersonne.EMPLOYE, false
+        ), resultat);
+        org.mockito.ArgumentCaptor<Personne> personneSauvegardee =
+            org.mockito.ArgumentCaptor.forClass(Personne.class);
+        verify(repository).save(personneSauvegardee.capture());
+        assertEquals(false, personneSauvegardee.getValue().getActif());
+    }
+
+    @Test
     void trouverAvecIdInexistantDeclencheException() {
         Long id = 120L;
 

@@ -132,6 +132,7 @@ public class PersonneService {
                 "Aucune personne trouvée avec l'email" + personneRequest.email()));
             Personne personneFactory = PersonneFactory.creerPersonne(personneRequest);
             personneFactory.setId(personneTrouver.getId());
+            personneFactory.setActif(personneTrouver.getActif());
             Personne personneSave = repository.save(personneFactory);
             return new PersonneResponse(
                 personneSave.getId(),
